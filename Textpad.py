@@ -9,6 +9,12 @@ class TextPad:
     __thisWidth = 300
     __thisHeight = 300
     __TextArea = tk.Text(__root)
+    __MenuBar = tk.Menu(__root)
+    __temp1= tk.Menu(__MenuBar,tearoff=0)
+    __temp2= tk.Menu(__MenuBar,tearoff=0)
+    __temp3= tk.Menu(__MenuBar,tearoff=0)
+    __temp4= tk.Menu(__MenuBar,tearoff=0)
+    
 
     def __todo():
         showinfo("warning temp","To be implemented")
@@ -58,9 +64,25 @@ class TextPad:
         self.__root.grid_columnconfigure(0, weight=1)
  
         # Add controls (widget)
-        self.__button.grid()
+        #self.__button.grid()
+        self.__temp1.add_command(label="submenu button", command=self.__todo)
+        self.__temp1.add_command(label="submenu button2", command=self.__todo)
+        self.__temp1.add_command(label="submenu button3", command=self.__todo)
+        
+
+        self.__MenuBar.add_cascade(label="test1",menu=self.__temp1)
+        self.__MenuBar.add_cascade(label="test1",menu=self.__temp2)
+        self.__MenuBar.add_cascade(label="test1",menu=self.__temp3)
+        self.__MenuBar.add_cascade(label="test1",menu=self.__temp4)
+        
+        self.__root.config(menu=self.__MenuBar)
+
+
         self.__TextArea.grid(sticky = tk.N + tk.E + tk.S +tk.W)            
  
+    def __todo(self):
+        showinfo("warning temp","To be implemented")
+
     def run(self):
         # Run main application
         self.__root.mainloop()
