@@ -1,7 +1,8 @@
 import tkinter as tk
 import os   
 #from tkinter import *
-from tkinter import font
+from tkinter import Label, font
+from tkinter.constants import END, INSERT
 from tkinter.messagebox import *
 from tkinter.filedialog import *
 from functools import partial
@@ -13,7 +14,7 @@ class TextPad:
     # default window width and height
     __thisWidth = 300
     __thisHeight = 300
-    __TextArea = tk.Text(__root)
+    __TextArea = tk.Text(__root,undo=True)
     __MenuBar = tk.Menu(__root)
     __FileMenu = tk.Menu(__MenuBar, tearoff=0)
     __EditMenu = tk.Menu(__MenuBar, tearoff=0)
@@ -105,7 +106,20 @@ class TextPad:
         # To give a feature of paste
         self.__EditMenu.add_command(label="Paste",accelerator='Ctrl+v',
                                         command=self.__paste)        
-         
+
+        self.__EditMenu.add_separator()
+
+        self.__EditMenu.add_command(label='Undo',accelerator='Ctrl+z',command=self.__undo)
+
+        self.__EditMenu.add_command(label='Rndo',accelerator='Ctrl+y',command=self.__redo)
+
+        self.__EditMenu.add_separator()
+
+        self.__EditMenu.add_command(label="Find",accelerator='Ctrl+f',command=self.__find)
+
+        self.__EditMenu.add_command(label="Replace",command=self.__findnReplace)
+        
+
         # To give a feature of editing
         self.__MenuBar.add_cascade(label="Edit",
                                        menu=self.__EditMenu)    
@@ -142,11 +156,14 @@ class TextPad:
         
         self.__MenuBar.add_command(label="Italic",command=self.__italicer)
 
-        self.__MenuBar.add_command(label="Underline",command=self.__todo)
+        #self.__MenuBar.add_command(label="Underline",command=self.__todo)
+
+
+        
 
         self.__MenuBar.add_separator()
 
-        self.__MenuBar.add_command(label="OCR",command=self.__todo)
+        #self.__MenuBar.add_command(label="OCR",command=self.__todo)
         
         self.__root.config(menu=self.__MenuBar)
  
@@ -266,13 +283,100 @@ class TextPad:
 
     def __cut(self):
         self.__TextArea.event_generate("<<Cut>>")
+        #print('cut called')
  
     def __copy(self):
         self.__TextArea.event_generate("<<Copy>>")
+        #print('copy called')
  
     def __paste(self):
         self.__TextArea.event_generate("<<Paste>>")
+        #print('paste called')
  
+    def __undo(self):
+        self.__TextArea.edit_undo()
+        #print('undo called')
+
+    def __redo(self):
+        self.__TextArea.edit_redo()
+        #print('redo called')
+
+    def __find(self):
+        __wind = tk.Tk()
+        __wind.geometry("200x100")
+        __find_lab = tk.Label(__wind,text='Find : ')
+        __find_lab.grid(row=0,column=0)
+        __find_box=tk.Entry(__wind)
+        __find_box.grid(row=0,column=1)
+        
+        def sf():
+            idx=self.__TextArea.index(INSERT)
+            self.__TextArea.tag_remove(tk.SEL,'1.0',END)
+            tobe_search = __find_box.get()
+            print(self.__TextArea.get('1.0',END))
+            print(tobe_search)
+            if(tobe_search):
+                
+            # searches for desired string from index 1
+                print(idx)
+                i = self.__TextArea.search(tobe_search, idx,stopindex = END)
+                print(idx,i)
+                if not i:
+                    i=self.__TextArea.search(tobe_search, '1.0',stopindex = idx)
+                if not i:
+                    showinfo('warning','not found!')
+                    return
+                lastidx = '% s+% dc' % (i, len(tobe_search))
+                self.__TextArea.mark_set(tk.INSERT,lastidx)
+                self.__TextArea.tag_add(tk.SEL, i, lastidx)
+                print(idx,i,' * ')
+                __wind.destroy()
+
+        __find_button = tk.Button(__wind,text="find now",command=sf)
+        __find_button.grid(row=1,column=0,columnspan=2)
+
+    def __findnReplace(self):
+        __wind = tk.Tk()
+        __wind.title('Find and Replace')
+        __wind.geometry("200x100")
+        __find_lab = tk.Label(__wind,text='Find : ')
+        __find_lab.grid(row=0,column=0)
+        __find_box=tk.Entry(__wind)
+        __find_box.grid(row=0,column=1)
+        __replace_lab = tk.Label(__wind,text='replace : ')
+        __replace_lab.grid(row=1,column=0)
+        __replace_box=tk.Entry(__wind)
+        __replace_box.grid(row=1,column=1)
+        
+
+        idx=self.__TextArea.index(INSERT)
+        def sf(idx):
+            self.__TextArea.tag_remove('found','1.0',END)
+            tobe_search = __find_box.get()
+            if(tobe_search):
+                
+            # searches for desired string from index 1
+                    print(idx)
+                    idx = self.__TextArea.search(tobe_search, idx, nocase = 1,
+                                    stopindex = END)
+                    print(idx)
+                    if not idx: idx='1.0'
+                    
+                    # last index sum of current index and
+                    # length of text
+                    lastidx = '% s+% dc' % (idx, len(tobe_search))
+                    
+                    self.__TextArea.mark_set(tk.INSERT,idx)
+
+        
+                    # overwrite 'Found' at idx
+                    self.__TextArea.tag_add('found', idx, lastidx)
+                    idx = lastidx
+                    print(idx)
+
+        __find_button = tk.Button(__wind,text="Replace",command=partial(sf,idx))
+        __find_button.grid(row=2,column=0,columnspan=2)  
+
     def run(self):
  
         # Run main application
