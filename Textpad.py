@@ -1,11 +1,11 @@
 import tkinter as tk
 import os   
-#from tkinter import *
 from tkinter import Label, font
-from tkinter.constants import END, INSERT
 from tkinter.messagebox import *
 from tkinter.filedialog import *
 from functools import partial
+from tkinter import colorchooser
+ 
 
 class TextPad:
  
@@ -22,19 +22,21 @@ class TextPad:
     __EditMenu = tk.Menu(__MenuBar, tearoff=0)
     __FormatMenu = tk.Menu(__MenuBar,tearoff=0)
     __HelpMenu = tk.Menu(__MenuBar, tearoff=0)
-    #__FontFamiltList = list(font.families())
+    __StyleMenu = tk.Menu(__MenuBar,tearoff=0)
     __FontDropSubmenu = tk.Menu(__FormatMenu,tearoff=0)
     __FontSizeSubmenu = tk.Menu(__FormatMenu,tearoff=0)
+    
 
     # To add scrollbar
     __thisScrollBar = tk.Scrollbar(__TextArea)    
     __file = None
-
- 
+    
     def __init__(self,**kwargs):
- 
+
         self.__root.bind_all("<Control-f>", self.__find)
         self.__root.bind_all("<Control-r>", self.__findnReplace)
+        self.__root.bind_all("<Control-b>", self.__bolder)
+        self.__root.bind_all("<Control-i>", self.__italicer)
         # Set icon
         try:
                 self.__root.wm_iconbitmap("TextPad.ico")
@@ -126,32 +128,17 @@ class TextPad:
         # To give a feature of editing
         self.__MenuBar.add_cascade(label="Edit",
                                        menu=self.__EditMenu)    
-        
-        #self.__FontDrop = Menu(self.__FormatMenu,self.__CurrentFont,*self.__FontFamiltList,command=self.__formating)
-        font_list=['Arial','Courier','Cambrier','Helvetica','Times']
+
+        font_list=['Arial','Courier','Cambrier', 'Franklin Gothic Medium', 'Gabriola','Helvetica','Impact', 'Ink Free', 'Lucida Console','Papyrus','Times']
         for font in font_list:
             self.__FontDropSubmenu.add_command(label=font, command=partial(self.__ChangeFont,font))
         
-
-        # self.__FontDropSubmenu.add_command(label='Arial', command=partial(self.__ChangeFont,'Arial'))
-        # self.__FontDropSubmenu.add_command(label='Courier', command=partial(self.__ChangeFont,'Courier'))
-        # self.__FontDropSubmenu.add_command(label='Cambrier', command=partial(self.__ChangeFont,'Cambrier'))
-        # self.__FontDropSubmenu.add_command(label='Helvetica', command=partial(self.__ChangeFont,'Helvetica'))
-        # self.__FontDropSubmenu.add_command(label='Times', command=partial(self.__ChangeFont,'Times'))
-        
-        
-        #self.__FormatMenu.add_cascade(label=f"{self.__CurrentFont}",menu=self.__FontDropSubmenu)
         self.__FormatMenu.add_cascade(label="Font List",menu=self.__FontDropSubmenu)
 
         font_sizes=[11,12,14,16,20,24,28,32,38,48,60,72]
         for size in font_sizes:
             self.__FontSizeSubmenu.add_command(label=str(size),command=partial(self.__ChangeFontSize,size))
         
-
-        # self.__FontSizeSubmenu.add_command(label="12",command=partial(self.__ChangeFontSize,12))
-        # self.__FontSizeSubmenu.add_command(label="20",command=partial(self.__ChangeFontSize,20))
-        # self.__FontSizeSubmenu.add_command(label="30",command=partial(self.__ChangeFontSize,30))
-        # self.__FontSizeSubmenu.add_command(label="40",command=partial(self.__ChangeFontSize,40))
 
         self.__FormatMenu.add_cascade(label="Font Size",menu=self.__FontSizeSubmenu)
         
@@ -165,14 +152,20 @@ class TextPad:
 
         self.__MenuBar.add_separator()
 
-        self.__MenuBar.add_command(label="Bold",command=self.__bolder)
+        self.__StyleMenu.add_command(label="Bold",accelerator='Ctrl+b',command=self.__bolder)
         
-        self.__MenuBar.add_command(label="Italic",command=self.__italicer)
+        self.__StyleMenu.add_command(label="Italic",accelerator='Ctrl+i',command=self.__italicer)
 
-        #self.__MenuBar.add_command(label="Underline",command=self.__todo)
+        self.__StyleMenu.add_separator()
 
+        self.__StyleMenu.add_command(label='Text Color',command=self.__ChangeTextColor)
+
+        self.__StyleMenu.add_command(label='BG Color',command=self.__ChangeBGColor)
 
         
+
+        self.__MenuBar.add_cascade(label="Style",
+                                       menu=self.__StyleMenu)
 
         self.__MenuBar.add_separator()
 
@@ -188,9 +181,6 @@ class TextPad:
      
     def __todo(self):
         showinfo("warning temp","To be implemented")
-
-    def __formating(self):
-        self.__todo()
          
     def __quitApplication(self):
         self.__root.destroy()
@@ -199,7 +189,7 @@ class TextPad:
     def __showAbout(self):
         showinfo("TextPad","Adish Jain")
 
-    def __bolder(self):
+    def __bolder(self,event=None):
         bold_font= font.Font(self.__TextArea,self.__TextArea.cget("font"))
         bold_font.configure(weight="bold")
         self.__TextArea.tag_configure("bold", font=bold_font)
@@ -212,7 +202,7 @@ class TextPad:
         except tk.TclError:
             pass
 
-    def __italicer(self):
+    def __italicer(self,event=None):
         bold_font= font.Font(self.__TextArea,self.__TextArea.cget("font"))
         bold_font.configure(slant="italic")
         self.__TextArea.tag_configure("italic", font=bold_font)
@@ -285,11 +275,15 @@ class TextPad:
         self.__CurrentFont=Font_name
         i=int(self.__CurrentFontSize)
         self.__TextArea.config(font=(Font_name,i))
+        self.__bolder()
+        self.__italicer()
     
     def __ChangeFontSize(self,FontSize:int):
         st=self.__CurrentFont
         self.__CurrentFontSize=FontSize
         self.__TextArea.config(font=(st,FontSize))
+        self.__bolder()
+        self.__italicer()
         #print(f"{st} {FontSize}")
 
     def __cut(self):
@@ -312,6 +306,15 @@ class TextPad:
         self.__TextArea.edit_redo()
         #print('redo called')
 
+    def __ChangeTextColor(self):
+        color_code = colorchooser.askcolor()
+        self.__TextArea.config(foreground=color_code[1])
+        
+
+    def __ChangeBGColor(self):
+        color_code = colorchooser.askcolor()
+        self.__TextArea.config(background=color_code[1])
+
     def __find(self,event=None):
         __wind = tk.Tk()
         __wind.geometry("300x200")
@@ -327,16 +330,16 @@ class TextPad:
         __find_box.grid(row=0,column=1)
         
         def sf():
-            idx=self.__TextArea.index(INSERT)
-            self.__TextArea.tag_remove(tk.SEL,'1.0',END)
+            idx=self.__TextArea.index(tk.INSERT)
+            self.__TextArea.tag_remove(tk.SEL,'1.0',tk.END)
             tobe_search = __find_box.get()
-            print(self.__TextArea.get('1.0',END))
+            print(self.__TextArea.get('1.0',tk.END))
             print(tobe_search)
             if(tobe_search):
                 
             # searches for desired string from index 1
                 print(idx)
-                i = self.__TextArea.search(tobe_search, idx,stopindex = END)
+                i = self.__TextArea.search(tobe_search, idx,stopindex = tk.END)
                 print(idx,i)
                 if not i:
                     i=self.__TextArea.search(tobe_search, '1.0',stopindex = idx)
@@ -372,17 +375,17 @@ class TextPad:
         __replace_box.grid(row=1,column=1)
         
         def sf():
-            idx=self.__TextArea.index(INSERT)
-            self.__TextArea.tag_remove(tk.SEL,'1.0',END)
+            idx=self.__TextArea.index(tk.INSERT)
+            self.__TextArea.tag_remove(tk.SEL,'1.0',tk.END)
             tobe_search = __find_box.get()
             replace_with = __replace_box.get()
-            print(self.__TextArea.get('1.0',END))
+            print(self.__TextArea.get('1.0',tk.END))
             print(tobe_search)
             if(tobe_search and replace_with):
                 
             # searches for desired string from index 1
                 print(idx)
-                i = self.__TextArea.search(tobe_search, idx,stopindex = END)
+                i = self.__TextArea.search(tobe_search, idx,stopindex = tk.END)
                 print(idx,i)
                 if not i:
                     i=self.__TextArea.search(tobe_search, '1.0',stopindex = idx)
@@ -416,5 +419,5 @@ class TextPad:
  
 if __name__ == "__main__":
 # Run main application
-    textPad = TextPad(width=600,height=400)
+    textPad = TextPad(width=700,height=350)
     textPad.run()
