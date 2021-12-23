@@ -14,15 +14,15 @@ class TextPad:
     # default window width and height
     __thisWidth = 300
     __thisHeight = 300
-    __TextArea = tk.Text(__root,undo=True)
+    __CurrentFont = tk.StringVar(__root,'Times')
+    __CurrentFontSize = int('28')
+    __TextArea = tk.Text(__root,font=(__CurrentFont,__CurrentFontSize),undo=True)
     __MenuBar = tk.Menu(__root)
     __FileMenu = tk.Menu(__MenuBar, tearoff=0)
     __EditMenu = tk.Menu(__MenuBar, tearoff=0)
     __FormatMenu = tk.Menu(__MenuBar,tearoff=0)
     __HelpMenu = tk.Menu(__MenuBar, tearoff=0)
     #__FontFamiltList = list(font.families())
-    __CurrentFont = tk.StringVar(__root,'Arial')
-    __CurrentFontSize = int('14')
     __FontDropSubmenu = tk.Menu(__FormatMenu,tearoff=0)
     __FontSizeSubmenu = tk.Menu(__FormatMenu,tearoff=0)
 
@@ -128,20 +128,30 @@ class TextPad:
                                        menu=self.__EditMenu)    
         
         #self.__FontDrop = Menu(self.__FormatMenu,self.__CurrentFont,*self.__FontFamiltList,command=self.__formating)
-        self.__FontDropSubmenu.add_command(label='Arial', command=partial(self.__ChangeFont,'Arial'))
-        self.__FontDropSubmenu.add_command(label='Courier', command=partial(self.__ChangeFont,'Courier'))
-        self.__FontDropSubmenu.add_command(label='Cambrier', command=partial(self.__ChangeFont,'Cambrier'))
-        self.__FontDropSubmenu.add_command(label='Helvetica', command=partial(self.__ChangeFont,'Helvetica'))
-        self.__FontDropSubmenu.add_command(label='Times', command=partial(self.__ChangeFont,'Times'))
+        font_list=['Arial','Courier','Cambrier','Helvetica','Times']
+        for font in font_list:
+            self.__FontDropSubmenu.add_command(label=font, command=partial(self.__ChangeFont,font))
+        
+
+        # self.__FontDropSubmenu.add_command(label='Arial', command=partial(self.__ChangeFont,'Arial'))
+        # self.__FontDropSubmenu.add_command(label='Courier', command=partial(self.__ChangeFont,'Courier'))
+        # self.__FontDropSubmenu.add_command(label='Cambrier', command=partial(self.__ChangeFont,'Cambrier'))
+        # self.__FontDropSubmenu.add_command(label='Helvetica', command=partial(self.__ChangeFont,'Helvetica'))
+        # self.__FontDropSubmenu.add_command(label='Times', command=partial(self.__ChangeFont,'Times'))
         
         
         #self.__FormatMenu.add_cascade(label=f"{self.__CurrentFont}",menu=self.__FontDropSubmenu)
         self.__FormatMenu.add_cascade(label="Font List",menu=self.__FontDropSubmenu)
 
-        self.__FontSizeSubmenu.add_command(label="12",command=partial(self.__ChangeFontSize,12))
-        self.__FontSizeSubmenu.add_command(label="20",command=partial(self.__ChangeFontSize,20))
-        self.__FontSizeSubmenu.add_command(label="30",command=partial(self.__ChangeFontSize,30))
-        self.__FontSizeSubmenu.add_command(label="40",command=partial(self.__ChangeFontSize,40))
+        font_sizes=[11,12,14,16,20,24,28,32,38,48,60,72]
+        for size in font_sizes:
+            self.__FontSizeSubmenu.add_command(label=str(size),command=partial(self.__ChangeFontSize,size))
+        
+
+        # self.__FontSizeSubmenu.add_command(label="12",command=partial(self.__ChangeFontSize,12))
+        # self.__FontSizeSubmenu.add_command(label="20",command=partial(self.__ChangeFontSize,20))
+        # self.__FontSizeSubmenu.add_command(label="30",command=partial(self.__ChangeFontSize,30))
+        # self.__FontSizeSubmenu.add_command(label="40",command=partial(self.__ChangeFontSize,40))
 
         self.__FormatMenu.add_cascade(label="Font Size",menu=self.__FontSizeSubmenu)
         
@@ -282,8 +292,6 @@ class TextPad:
         self.__TextArea.config(font=(st,FontSize))
         #print(f"{st} {FontSize}")
 
-
-
     def __cut(self):
         self.__TextArea.event_generate("<<Cut>>")
         #print('cut called')
@@ -398,11 +406,6 @@ class TextPad:
 
         __find_button = tk.Button(__wind,text="find and replace",command=sf)
         __find_button.grid(row=2,column=0,columnspan=2)
-
-
-        
-
-          
 
     def run(self):
  
