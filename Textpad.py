@@ -29,9 +29,12 @@ class TextPad:
     # To add scrollbar
     __thisScrollBar = tk.Scrollbar(__TextArea)    
     __file = None
+
  
     def __init__(self,**kwargs):
  
+        self.__root.bind_all("<Control-f>", self.__find)
+        self.__root.bind_all("<Control-r>", self.__findnReplace)
         # Set icon
         try:
                 self.__root.wm_iconbitmap("TextPad.ico")
@@ -117,7 +120,7 @@ class TextPad:
 
         self.__EditMenu.add_command(label="Find",accelerator='Ctrl+f',command=self.__find)
 
-        self.__EditMenu.add_command(label="Replace",command=self.__findnReplace)
+        self.__EditMenu.add_command(label="Replace",accelerator='Ctrl+r',command=self.__findnReplace)
         
 
         # To give a feature of editing
@@ -301,12 +304,18 @@ class TextPad:
         self.__TextArea.edit_redo()
         #print('redo called')
 
-    def __find(self):
+    def __find(self,event=None):
         __wind = tk.Tk()
-        __wind.geometry("200x100")
+        __wind.geometry("300x200")
         __find_lab = tk.Label(__wind,text='Find : ')
         __find_lab.grid(row=0,column=0)
+        try:
+            __sel_st=self.__TextArea.selection_get()
+        except:
+            __sel_st=''
+        print(__sel_st)
         __find_box=tk.Entry(__wind)
+        __find_box.insert(tk.END,__sel_st)
         __find_box.grid(row=0,column=1)
         
         def sf():
@@ -335,47 +344,65 @@ class TextPad:
         __find_button = tk.Button(__wind,text="find now",command=sf)
         __find_button.grid(row=1,column=0,columnspan=2)
 
-    def __findnReplace(self):
+    def __findnReplace(self,event=None):
         __wind = tk.Tk()
         __wind.title('Find and Replace')
-        __wind.geometry("200x100")
+        __wind.geometry("300x250")
         __find_lab = tk.Label(__wind,text='Find : ')
         __find_lab.grid(row=0,column=0)
+        try:
+            __sel_st=self.__TextArea.selection_get()
+        except:
+            __sel_st=''
+        print(__sel_st)
         __find_box=tk.Entry(__wind)
+        __find_box.insert(tk.END,__sel_st)
         __find_box.grid(row=0,column=1)
         __replace_lab = tk.Label(__wind,text='replace : ')
         __replace_lab.grid(row=1,column=0)
         __replace_box=tk.Entry(__wind)
         __replace_box.grid(row=1,column=1)
         
-
-        idx=self.__TextArea.index(INSERT)
-        def sf(idx):
-            self.__TextArea.tag_remove('found','1.0',END)
+        def sf():
+            idx=self.__TextArea.index(INSERT)
+            self.__TextArea.tag_remove(tk.SEL,'1.0',END)
             tobe_search = __find_box.get()
-            if(tobe_search):
+            replace_with = __replace_box.get()
+            print(self.__TextArea.get('1.0',END))
+            print(tobe_search)
+            if(tobe_search and replace_with):
                 
             # searches for desired string from index 1
-                    print(idx)
-                    idx = self.__TextArea.search(tobe_search, idx, nocase = 1,
-                                    stopindex = END)
-                    print(idx)
-                    if not idx: idx='1.0'
-                    
-                    # last index sum of current index and
-                    # length of text
-                    lastidx = '% s+% dc' % (idx, len(tobe_search))
-                    
-                    self.__TextArea.mark_set(tk.INSERT,idx)
+                print(idx)
+                i = self.__TextArea.search(tobe_search, idx,stopindex = END)
+                print(idx,i)
+                if not i:
+                    i=self.__TextArea.search(tobe_search, '1.0',stopindex = idx)
+                if not i:
+                    showinfo('warning','not found!')
+                    return
+                lastidx = '% s+% dc' % (i, len(tobe_search))
+                self.__TextArea.delete(i,lastidx)
+                self.__TextArea.insert(i,replace_with)
+                lastrep = '% s+% dc' % (i, len(replace_with))
+                
+                self.__TextArea.mark_set(tk.INSERT,lastrep)
+                self.__TextArea.tag_add(tk.SEL, i, lastrep)
+                print(idx,i,' * ')
+                __wind.destroy()
+            else:
+                if not replace_with :
+                    showinfo("warning", "enter replaceing text")
+                else:
+                    showinfo('warning','Enter text to find')
+
+        __find_button = tk.Button(__wind,text="find and replace",command=sf)
+        __find_button.grid(row=2,column=0,columnspan=2)
+
 
         
-                    # overwrite 'Found' at idx
-                    self.__TextArea.tag_add('found', idx, lastidx)
-                    idx = lastidx
-                    print(idx)
 
-        __find_button = tk.Button(__wind,text="Replace",command=partial(sf,idx))
-        __find_button.grid(row=2,column=0,columnspan=2)  
+          
 
     def run(self):
  
