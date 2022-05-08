@@ -1,10 +1,15 @@
 import tkinter as tk
 import os   
-from tkinter import Label, font
+from PIL import Image, ImageTk
+from tkinter import font
 from tkinter.messagebox import *
 from tkinter.filedialog import *
 from functools import partial
 from tkinter import colorchooser
+import base64
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends import default_backend
  
 
 class TextPad:
@@ -80,6 +85,8 @@ class TextPad:
  
         # Add controls (widget)
         self.__TextArea.grid(sticky = tk.N + tk.E + tk.S +tk.W)
+
+        #self.__create_icons()
          
         # To open new file
         self.__FileMenu.add_command(label="New",
@@ -169,6 +176,17 @@ class TextPad:
 
         self.__MenuBar.add_separator()
 
+        self.__MenuBar.add_command(label="Encpt/Decrpt",command=self.__Encrypter)
+
+        self.__MenuBar.add_separator()
+
+        self.__MenuBar.add_command(label="OCR",command=self.__todo)
+
+        self.__MenuBar.add_separator()
+
+        self.__MenuBar.add_command(label="Audio-Text",command=self.__todo)
+        
+
         #self.__MenuBar.add_command(label="OCR",command=self.__todo)
         
         self.__root.config(menu=self.__MenuBar)
@@ -178,7 +196,10 @@ class TextPad:
         # Scrollbar will adjust automatically according to the content       
         self.__thisScrollBar.config(command=self.__TextArea.yview)    
         self.__TextArea.config(yscrollcommand=self.__thisScrollBar.set)
-     
+
+    def __create_icons(self):
+        self.img_save_icon = ImageTk.PhotoImage(Image.open('E:\\python\\TextPad\\Textpad\save.png'))
+
     def __todo(self):
         showinfo("warning temp","To be implemented")
          
@@ -329,7 +350,7 @@ class TextPad:
         __find_box.insert(tk.END,__sel_st)
         __find_box.grid(row=0,column=1)
         
-        def sf():
+        def Text_find():
             idx=self.__TextArea.index(tk.INSERT)
             self.__TextArea.tag_remove(tk.SEL,'1.0',tk.END)
             tobe_search = __find_box.get()
@@ -352,7 +373,7 @@ class TextPad:
                 print(idx,i,' * ')
                 __wind.destroy()
 
-        __find_button = tk.Button(__wind,text="find now",command=sf)
+        __find_button = tk.Button(__wind,text="find now",command=Text_find)
         __find_button.grid(row=1,column=0,columnspan=2)
 
     def __findnReplace(self,event=None):
@@ -374,7 +395,7 @@ class TextPad:
         __replace_box=tk.Entry(__wind)
         __replace_box.grid(row=1,column=1)
         
-        def sf():
+        def Text_find_replace():
             idx=self.__TextArea.index(tk.INSERT)
             self.__TextArea.tag_remove(tk.SEL,'1.0',tk.END)
             tobe_search = __find_box.get()
@@ -407,8 +428,71 @@ class TextPad:
                 else:
                     showinfo('warning','Enter text to find')
 
-        __find_button = tk.Button(__wind,text="find and replace",command=sf)
+        __find_button = tk.Button(__wind,text="find and replace",command=Text_find_replace)
         __find_button.grid(row=2,column=0,columnspan=2)
+
+    def __Encrypter(self):
+        __wind = tk.Tk()
+        # __wind.grab_set()
+        __wind.title('Encrypt')
+        __wind.geometry("300x250")
+        __pass_lab = tk.Label(__wind,text='Password : ')
+        __pass_lab.grid(row=0,column=0)
+        __pass_inp = tk.Entry(__wind)
+        __pass_inp.grid(row=0,column=1)
+        
+        def enc():
+            password = __pass_inp.get()
+            print(password)
+            if not password:
+                showerror("Alert","Enter password")
+                return
+            self.encrypt(password,True)
+
+        def dnc():
+            password = __pass_inp.get()
+            print(password)
+            if not password:
+                showerror("Alert","Enter password")
+                return
+            self.encrypt(password,False)
+        
+        __pass_btn1=tk.Button(__wind,text='enc me',command=enc)
+        __pass_btn1.grid(row=1,column=0)
+        __pass_btn=tk.Button(__wind,text='dnc me',command=dnc)
+        __pass_btn.grid(row=1,column=1)
+
+    def encrypt(self,pas,forwar=True):
+        pas_byte= pas.encode('utf-8')
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA512(),
+            length=32,
+            salt=bytes(1),
+            iterations=10000,
+            backend=default_backend()
+        )
+        key =kdf.derive(pas_byte)
+        print(base64.urlsafe_b64encode(key))
+        cipher_text=str()
+        plain_text = self.__TextArea.get("1.0","end-1c")
+        if(forwar):
+            key=str(key)+plain_text
+            for i in range(len(plain_text)):
+                x= ( ord(plain_text[i]) ^ ord(key[i]) )
+                #x=x
+                cipher_text=cipher_text+chr(x)
+        else:
+            key = str(key)
+            for i in range(len(plain_text)):
+                x= ( ord(plain_text[i]) ^ ord(key[i]) )
+                #x=x
+                cipher_text=cipher_text+chr(x)
+                key=key+(chr(x))
+        self.__TextArea.delete("1.0","end-1c")
+        self.__TextArea.insert('1.0',cipher_text)
+        
+
+
 
     def run(self):
  
