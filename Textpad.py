@@ -1,16 +1,21 @@
 import tkinter as tk
 import os   
-from PIL import Image, ImageTk
+
 from tkinter import font
 from tkinter.messagebox import *
 from tkinter.filedialog import *
 from functools import partial
 from tkinter import colorchooser
+
 import base64
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
- 
+
+import ocr_A
+#import test2speactoffl
+import pyttsx3
+import pygame
 
 class TextPad:
  
@@ -31,8 +36,9 @@ class TextPad:
     __FontDropSubmenu = tk.Menu(__FormatMenu,tearoff=0)
     __FontSizeSubmenu = tk.Menu(__FormatMenu,tearoff=0)
     
-
-    # To add scrollbar
+    __Text2SpeechRate= int(120)
+    __t2s_module = None
+    
     __thisScrollBar = tk.Scrollbar(__TextArea)    
     __file = None
     
@@ -42,6 +48,9 @@ class TextPad:
         self.__root.bind_all("<Control-r>", self.__findnReplace)
         self.__root.bind_all("<Control-b>", self.__bolder)
         self.__root.bind_all("<Control-i>", self.__italicer)
+        self.__t2s_module = pyttsx3.init()
+        self.__t2s_module.setProperty('rate',120)
+        self.__Text2SpeechRate = int(120)
         # Set icon
         try:
                 self.__root.wm_iconbitmap("TextPad.ico")
@@ -180,11 +189,19 @@ class TextPad:
 
         self.__MenuBar.add_separator()
 
-        self.__MenuBar.add_command(label="OCR",command=self.__todo)
+        self.__MenuBar.add_command(label="OCR",command=self.__OCR)
 
         self.__MenuBar.add_separator()
 
-        self.__MenuBar.add_command(label="Audio-Text",command=self.__todo)
+        # self.__Text2SpeechMenu.add_command(label='Speak All',command=self.__AllTextToSpeach)
+        # self.__Text2SpeechMenu.add_command(label='Speak Selected',command=self.__SelectedTextToSpeach)
+        # for rate in range(80,261,20):
+        #     self.__Text2SpeeckRate_SubMenu.add_command(label=rate,command=partial(self.__T2S_Change_Rate,rate))
+        
+        #self.__Text2SpeechMenu.add_cascade(label='Change Speed',menu=self.__Text2SpeeckRate_SubMenu)
+        self.__MenuBar.add_command(label='Text to Speach',command=self.__Text2Speach_wind)
+
+
         
 
         #self.__MenuBar.add_command(label="OCR",command=self.__todo)
@@ -196,9 +213,6 @@ class TextPad:
         # Scrollbar will adjust automatically according to the content       
         self.__thisScrollBar.config(command=self.__TextArea.yview)    
         self.__TextArea.config(yscrollcommand=self.__thisScrollBar.set)
-
-    def __create_icons(self):
-        self.img_save_icon = ImageTk.PhotoImage(Image.open('E:\\python\\TextPad\\Textpad\save.png'))
 
     def __todo(self):
         showinfo("warning temp","To be implemented")
@@ -375,6 +389,88 @@ class TextPad:
 
         __find_button = tk.Button(__wind,text="find now",command=Text_find)
         __find_button.grid(row=1,column=0,columnspan=2)
+
+    def __OCR(self):
+        __wind = tk.Tk()
+        ocr_A.Ocr(__wind)
+
+
+    def __Text2Speach_wind(self):
+        __wind = tk.Tk()
+        pygame.mixer.init()
+        
+        def updateRate(vr):
+            self.__t2s_module.setProperty('rate',rateSelected.get())
+            self.__Text2SpeechRate = rateSelected.get()
+        
+        rateOption=list(range(80,261,20))
+        rateSelected = tk.IntVar()
+        rateSelected.set(self.__Text2SpeechRate)
+        rateMenu = tk.OptionMenu(__wind,rateSelected,*rateOption,command=updateRate)
+
+        def readAll():
+            pygame.mixer.music.unload()
+            if os.path.exists("speak.wav"):
+                os.remove("speak.wav")
+                print("removed ...............")
+            outputFile = "speak.wav"
+            self.__t2s_module.save_to_file(self.__TextArea.get(1.0,tk.END),outputFile)
+            self.__t2s_module.runAndWait()
+            pygame.mixer.music.load(outputFile)
+            pygame.mixer.music.play()
+
+        def readSelected():
+            pygame.mixer.music.unload()
+            outputFile = "speak.wav"
+            self.__t2s_module.save_to_file(self.__SelectedText(),outputFile)
+            self.__t2s_module.runAndWait()
+            pygame.mixer.music.load(outputFile)
+            pygame.mixer.music.play()
+
+        def stop():
+            pygame.mixer.music.stop()
+
+        def pause():
+            pygame.mixer.music.pause()
+
+        def unpause():
+            pygame.mixer.music.unpause()
+
+
+        playAllButton = tk.Button(__wind,text="Speak all text",command=readAll)
+        playSelectedButton = tk.Button(__wind,text="Speak selected text",command=readSelected)
+
+        playAllButton.grid(row=0,column=0)
+        playSelectedButton.grid(row=0,column=1)
+
+        labe = tk.Label(__wind,text='Rate of Speach:')
+        labe.grid(row=1,column=0)
+
+        rateMenu.grid(row=1,column=1)
+        playBtn=tk.Button(__wind,text="Play",command=unpause)
+        playBtn.grid(row=2,column=0)
+
+        pauseBtn=tk.Button(__wind,text="Pause",command=pause)
+        pauseBtn.grid(row=2,column=1)
+
+        stopBtn=tk.Button(__wind,text="Stop",command=stop)
+        stopBtn.grid(row=2,column=2)
+
+
+    def __AllText(self):
+        str_to_speak = self.__TextArea.get(1.0,tk.END)
+        print("hello1...................................")
+        print(str_to_speak)
+        return str_to_speak
+
+    def __SelectedText(self):
+        if self.__TextArea.tag_ranges("sel"):
+            print("hello2...................................")
+            str_to_speak= self.__TextArea.get("sel.first","sel.last")
+            print(str_to_speak)
+            return str_to_speak
+        return ""
+
 
     def __findnReplace(self,event=None):
         __wind = tk.Tk()
