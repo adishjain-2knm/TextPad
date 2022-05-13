@@ -6,3 +6,4 @@ template.py
 __pycache__
 *.wav
 *.mp3
+tkinter testing/*

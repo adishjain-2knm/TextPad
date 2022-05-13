@@ -13,17 +13,17 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
 
 import ocr_A
-#import test2speactoffl
 import pyttsx3
 import pygame
 
 class TextPad:
  
-    __root = tk.Tk()
+    __root = tk.Tk()        # main root  window
  
     # default window width and height
     __thisWidth = 300
     __thisHeight = 300
+    
     __CurrentFont = tk.StringVar(__root,'Times')
     __CurrentFontSize = int('28')
     __TextArea = tk.Text(__root,font=(__CurrentFont,__CurrentFontSize),undo=True)
@@ -36,6 +36,7 @@ class TextPad:
     __FontDropSubmenu = tk.Menu(__FormatMenu,tearoff=0)
     __FontSizeSubmenu = tk.Menu(__FormatMenu,tearoff=0)
     
+    #module for text to speach
     __Text2SpeechRate= int(120)
     __t2s_module = None
     
@@ -129,79 +130,59 @@ class TextPad:
         self.__EditMenu.add_command(label="Paste",accelerator='Ctrl+v',
                                         command=self.__paste)        
 
+        #Following section contains Edit menu and its functionality
         self.__EditMenu.add_separator()
-
         self.__EditMenu.add_command(label='Undo',accelerator='Ctrl+z',command=self.__undo)
-
         self.__EditMenu.add_command(label='Rndo',accelerator='Ctrl+y',command=self.__redo)
-
         self.__EditMenu.add_separator()
-
         self.__EditMenu.add_command(label="Find",accelerator='Ctrl+f',command=self.__find)
-
         self.__EditMenu.add_command(label="Replace",accelerator='Ctrl+r',command=self.__findnReplace)
-        
 
-        # To give a feature of editing
-        self.__MenuBar.add_cascade(label="Edit",
-                                       menu=self.__EditMenu)    
+        # adding EditMenu to Main Menu
+        self.__MenuBar.add_cascade(label="Edit",menu=self.__EditMenu)    
 
+        # Generation of list of font 
         font_list=['Arial','Courier','Cambrier', 'Franklin Gothic Medium', 'Gabriola','Helvetica','Impact', 'Ink Free', 'Lucida Console','Papyrus','Times']
         for font in font_list:
             self.__FontDropSubmenu.add_command(label=font, command=partial(self.__ChangeFont,font))
-        
         self.__FormatMenu.add_cascade(label="Font List",menu=self.__FontDropSubmenu)
 
+        # Generation of list of font size
         font_sizes=[11,12,14,16,20,24,28,32,38,48,60,72]
         for size in font_sizes:
             self.__FontSizeSubmenu.add_command(label=str(size),command=partial(self.__ChangeFontSize,size))
-        
-
         self.__FormatMenu.add_cascade(label="Font Size",menu=self.__FontSizeSubmenu)
         
         self.__MenuBar.add_cascade(label="Format",menu=self.__FormatMenu)
 
         # To create a feature of description of the TextPad
-        self.__HelpMenu.add_command(label="About TextPad",
-                                        command=self.__showAbout)
-        self.__MenuBar.add_cascade(label="Help",
-                                       menu=self.__HelpMenu)
+        self.__HelpMenu.add_command(label="About TextPad", command=self.__showAbout)
 
+        #Style Menu for font color and styling
+        self.__MenuBar.add_cascade(label="Help", menu=self.__HelpMenu)
         self.__MenuBar.add_separator()
-
         self.__StyleMenu.add_command(label="Bold",accelerator='Ctrl+b',command=self.__bolder)
-        
         self.__StyleMenu.add_command(label="Italic",accelerator='Ctrl+i',command=self.__italicer)
-
         self.__StyleMenu.add_separator()
-
         self.__StyleMenu.add_command(label='Text Color',command=self.__ChangeTextColor)
-
         self.__StyleMenu.add_command(label='BG Color',command=self.__ChangeBGColor)
-
-        self.__MenuBar.add_cascade(label="Style",
-                                       menu=self.__StyleMenu)
-
+        self.__MenuBar.add_cascade(label="Style", menu=self.__StyleMenu)
         
         self.__MenuBar.add_separator()
-
         self.__MenuBar.add_separator()
 
-
+        #adding option of Encryption in Main Menu
         self.__MenuBar.add_command(label="Encpt/Decrpt",command=self.__Encrypter)
-
         self.__MenuBar.add_separator()
 
+        #Adding oprion of Optical Character Recognition to MainMenu
         self.__MenuBar.add_command(label="OCR",command=self.__OCR)
-
         self.__MenuBar.add_separator()
 
+        #Adding Text To Speach Option
         self.__MenuBar.add_command(label='Text to Speach',command=self.__Text2Speach_wind)
 
-        #self.__MenuBar.add_command(label='temp',command=self.__temp_tester)
-
         self.__root.config(menu=self.__MenuBar)
- 
         self.__thisScrollBar.pack(side=tk.RIGHT,fill=tk.Y)                   
          
         # Scrollbar will adjust automatically according to the content       
@@ -213,10 +194,9 @@ class TextPad:
          
     def __quitApplication(self):
         self.__root.destroy()
-        # exit()
  
     def __showAbout(self):
-        showinfo("TextPad","Adish Jain")
+        showinfo("TextPad","Adish Jain, Suraj Prakash, Aaryan")
 
     def __bolder(self,event=None):
         bold_font= font.Font(self.__TextArea,self.__TextArea.cget("font"))
@@ -245,28 +225,18 @@ class TextPad:
             pass
 
     def __openFile(self):
-         
-        self.__file = askopenfilename(defaultextension=".txt",
-                                      filetypes=[("All Files","*.*"),
-                                        ("Text Documents","*.txt")])
- 
+        self.__file = askopenfilename(defaultextension=".txt", filetypes=[("All Files","*.*"), ("Text Documents","*.txt")])
         if self.__file == "":
-             
             # no file to open
             self.__file = None
         else:
-             
             # Try to open the file
             # set the window title
             self.__root.title(os.path.basename(self.__file) + " - TextPad")
             self.__TextArea.delete(1.0,tk.END)
- 
             file = open(self.__file,"r")
- 
             self.__TextArea.insert(1.0,file.read())
- 
             file.close()
- 
          
     def __newFile(self):
         self.__root.title("Untitled - TextPad")
@@ -274,27 +244,17 @@ class TextPad:
         self.__TextArea.delete(1.0,tk.END)
  
     def __saveFile(self):
- 
         if self.__file == None:
             # Save as new file
-            self.__file = asksaveasfilename(initialfile='Untitled.txt',
-                                            defaultextension=".txt",
-                                            filetypes=[("All Files","*.*"),
-                                                ("Text Documents","*.txt")])
- 
+            self.__file = asksaveasfilename(initialfile='Untitled.txt',defaultextension=".txt",filetypes=[("All Files","*.*"),("Text Documents","*.txt")])
             if self.__file == "":
                 self.__file = None
             else:
-                 
                 # Try to save the file
                 file = open(self.__file,"w")
                 file.write(self.__TextArea.get(1.0,tk.END))
-                file.close()
-                 
-                # Change the window title
-                self.__root.title(os.path.basename(self.__file) + " - TextPad")
-                 
-             
+                file.close()                
+                self.__root.title(os.path.basename(self.__file) + " - TextPad")     # Change the window title
         else:
             file = open(self.__file,"w")
             file.write(self.__TextArea.get(1.0,tk.END))
@@ -313,38 +273,32 @@ class TextPad:
         self.__TextArea.config(font=(st,FontSize))
         self.__bolder()
         self.__italicer()
-        #print(f"{st} {FontSize}")
 
     def __cut(self):
         self.__TextArea.event_generate("<<Cut>>")
-        #print('cut called')
  
     def __copy(self):
         self.__TextArea.event_generate("<<Copy>>")
-        #print('copy called')
  
     def __paste(self):
         self.__TextArea.event_generate("<<Paste>>")
-        #print('paste called')
  
     def __undo(self):
         self.__TextArea.edit_undo()
-        #print('undo called')
 
     def __redo(self):
         self.__TextArea.edit_redo()
-        #print('redo called')
 
     def __ChangeTextColor(self):
         color_code = colorchooser.askcolor()
         self.__TextArea.config(foreground=color_code[1])
-        
 
     def __ChangeBGColor(self):
         color_code = colorchooser.askcolor()
         self.__TextArea.config(background=color_code[1])
 
-    def __find(self,event=None):
+    def __find(self,event=None):            
+        """Create Dialog Box to find a given subString in __TextArea"""
         __wind = tk.Tk()
         __wind.geometry("300x200")
         __find_lab = tk.Label(__wind,text='Find : ')
@@ -357,7 +311,6 @@ class TextPad:
         __find_box=tk.Entry(__wind)
         __find_box.insert(tk.END,__sel_st)
         __find_box.grid(row=0,column=1)
-        
         def Text_find():
             idx=self.__TextArea.index(tk.INSERT)
             self.__TextArea.tag_remove(tk.SEL,'1.0',tk.END)
@@ -365,7 +318,6 @@ class TextPad:
             print(self.__TextArea.get('1.0',tk.END))
             print(tobe_search)
             if(tobe_search):
-                
             # searches for desired string from index 1
                 print(idx)
                 i = self.__TextArea.search(tobe_search, idx,stopindex = tk.END)
@@ -380,104 +332,8 @@ class TextPad:
                 self.__TextArea.tag_add(tk.SEL, i, lastidx)
                 print(idx,i,' * ')
                 __wind.destroy()
-
         __find_button = tk.Button(__wind,text="find now",command=Text_find)
         __find_button.grid(row=1,column=0,columnspan=2)
-
-    def __OCR(self):
-        __wind = tk.Tk()
-        ocr_A.Ocr(__wind)
-
-
-    def __Text2Speach_wind(self):
-        __wind = tk.Toplevel()
-        __wind.title("Text to Speach")
-        __wind.geometry("400x300")
-        # __wind.focus_set()
-        # __wind.grab_set()
-        pygame.mixer.init()
-
-        f1=tk.Frame(__wind,bg="#b6eef4")
-        f2=tk.Frame(__wind,bg="#a6eef4")
-        f3=tk.Frame(__wind,bg="#86def4")
-
-        f1.place(width=400,height=100)
-        f2.place(y=100,width=400,height=100)
-        f3.place(y=200,width=400,height=100)
-        
-        
-        def updateRate(vr):
-            self.__t2s_module.setProperty('rate',rateSelected.get())
-            self.__Text2SpeechRate = rateSelected.get()
-        
-        rateOption=list(range(80,261,20))
-        rateSelected = tk.IntVar()
-        rateSelected.set(self.__Text2SpeechRate)
-        rateMenu = tk.OptionMenu(f2,rateSelected,*rateOption,command=updateRate)
-        rateMenu.config(width=18)
-
-        def readAll():
-            pygame.mixer.music.unload()
-            if os.path.exists("speak.wav"):
-                os.remove("speak.wav")
-                print("removed ...............")
-            outputFile = "speak.wav"
-            self.__t2s_module.save_to_file(self.__AllText(),outputFile)
-            self.__t2s_module.runAndWait()
-            pygame.mixer.music.load(outputFile)
-            pygame.mixer.music.play()
-
-        def readSelected():
-            pygame.mixer.music.unload()
-            outputFile = "speak.wav"
-            self.__t2s_module.save_to_file(self.__SelectedText(),outputFile)
-            self.__t2s_module.runAndWait()
-            pygame.mixer.music.load(outputFile)
-            pygame.mixer.music.play()
-
-        def stop():
-            pygame.mixer.music.stop()
-
-        def pause():
-            pygame.mixer.music.pause()
-
-        def unpause():
-            pygame.mixer.music.unpause()
-
-
-        playAllButton = tk.Button(f1,width=14,height=2,text="Speak all text",command=readAll)
-        playSelectedButton = tk.Button(f1,width=14,height=2,text="Speak selected text",command=readSelected)
-
-        playAllButton.grid(padx=30,pady=10,row=0,column=0)
-        playSelectedButton.grid(padx=30,pady=10,row=0,column=1)
-
-        labe = tk.Label(f2,width=14,height=2,text='Rate of Speach:')
-        labe.grid(padx=30,pady=10,row=0,column=0)
-        rateMenu.grid(padx=15,pady=10,row=0,column=1)
-
-        playBtn=tk.Button(f3,width=14,height=2,text="Play",command=unpause)
-        playBtn.grid(padx=15,pady=10,row=0,column=0)
-
-        pauseBtn=tk.Button(f3,width=14,height=2,text="Pause",command=pause)
-        pauseBtn.grid(padx=15,pady=10,row=0,column=1)
-
-        stopBtn=tk.Button(f3,width=14,height=2,text="Stop",command=stop)
-        stopBtn.grid(padx=15,pady=10,row=0,column=2)
-
-
-    def __AllText(self):
-        str_to_speak = self.__TextArea.get(1.0,tk.END)
-        print("hello1...................................")
-        print(str_to_speak)
-        return str_to_speak
-
-    def __SelectedText(self):
-        if self.__TextArea.tag_ranges("sel"):
-            print("hello2...................................")
-            str_to_speak= self.__TextArea.get("sel.first","sel.last")
-            print(str_to_speak)
-            return str_to_speak
-        return ""
 
 
     def __findnReplace(self,event=None):
@@ -490,7 +346,6 @@ class TextPad:
             __sel_st=self.__TextArea.selection_get()
         except:
             __sel_st=''
-        print(__sel_st)
         __find_box=tk.Entry(__wind)
         __find_box.insert(tk.END,__sel_st)
         __find_box.grid(row=0,column=1)
@@ -507,8 +362,7 @@ class TextPad:
             print(self.__TextArea.get('1.0',tk.END))
             print(tobe_search)
             if(tobe_search and replace_with):
-                
-            # searches for desired string from index 1
+                # searches for desired string from index 1
                 print(idx)
                 i = self.__TextArea.search(tobe_search, idx,stopindex = tk.END)
                 print(idx,i)
@@ -535,34 +389,33 @@ class TextPad:
         __find_button = tk.Button(__wind,text="find and replace",command=Text_find_replace)
         __find_button.grid(row=2,column=0,columnspan=2)
 
-    def __Encrypter(self):
+    def __Encrypter(self):          
+        """Function to encrypt given text"""
         __wind = tk.Toplevel()
-        __wind.focus_set()
+        __wind.focus_set()          #setting Encrypter dialogBox as "model window"
         __wind.grab_set()
-        # __wind.grab_set()
         __wind.title('Encrypt')
         __wind.geometry("300x150")
         __pass_lab = tk.Label(__wind,text='Password : ')
         __pass_lab.grid(padx=20,pady=20,row=0,column=0)
         __pass_inp = tk.Entry(__wind,show='*')
         __pass_inp.grid(padx=20,pady=20,row=0,column=1)
-        
         def enc():
+            """Helper function for __Encrypt"""
             password = __pass_inp.get()
             print(password)
             if not password:
                 showerror("Alert","Enter password")
                 return
             self.encrypt(password,True)
-
         def dnc():
+            """Helper function for __Encrypt"""
             password = __pass_inp.get()
             print(password)
             if not password:
                 showerror("Alert","Enter password")
                 return
             self.encrypt(password,False)
-        
         __pass_btn1=tk.Button(__wind,text='enc me',command=enc,width=10,bg='cyan3')
         __pass_btn1.grid(padx=20,pady=20,row=1,column=0)
         __pass_btn=tk.Button(__wind,text='dnc me',command=dnc,width=10,bg='cyan3')
@@ -585,24 +438,100 @@ class TextPad:
             key=str(key)+plain_text
             for i in range(len(plain_text)):
                 x= ( ord(plain_text[i]) ^ ord(key[i]) )
-                #x=x
                 cipher_text=cipher_text+chr(x)
         else:
             key = str(key)
             for i in range(len(plain_text)):
                 x= ( ord(plain_text[i]) ^ ord(key[i]) )
-                #x=x
                 cipher_text=cipher_text+chr(x)
                 key=key+(chr(x))
         self.__TextArea.delete("1.0","end-1c")
         self.__TextArea.insert('1.0',cipher_text)
 
-    def run(self):
- 
-        # Run main application
+    def __OCR(self):                    
+        """OCR from Helper file"""
+        __wind = tk.Tk()
+        ocr_A.Ocr(__wind)
+
+    def __Text2Speach_wind(self):       
+        """create dialogBox for Text to Speach functionality"""
+        __wind = tk.Toplevel()
+        __wind.title("Text to Speach")
+        __wind.geometry("400x300")
+        pygame.mixer.init()             #pygame.mixer for audio playback
+
+        f1=tk.Frame(__wind,bg="#b6eef4")
+        f2=tk.Frame(__wind,bg="#a6eef4")
+        f3=tk.Frame(__wind,bg="#86def4")
+
+        f1.place(width=400,height=100)
+        f2.place(y=100,width=400,height=100)
+        f3.place(y=200,width=400,height=100)
+        def updateRate(vr):
+            self.__t2s_module.setProperty('rate',rateSelected.get())
+            self.__Text2SpeechRate = rateSelected.get()
+        
+        rateOption=list(range(80,261,20))
+        rateSelected = tk.IntVar()
+        rateSelected.set(self.__Text2SpeechRate)
+        rateMenu = tk.OptionMenu(f2,rateSelected,*rateOption,command=updateRate)
+        rateMenu.config(width=18)
+
+        def readAll():
+            pygame.mixer.music.unload()
+            if os.path.exists("speak.wav"):
+                os.remove("speak.wav")
+            outputFile = "speak.wav" 
+            self.__t2s_module.save_to_file(self.__AllText(),outputFile)     #Creating wav file for playback
+            self.__t2s_module.runAndWait()
+            pygame.mixer.music.load(outputFile)
+            pygame.mixer.music.play()
+
+        def readSelected():
+            pygame.mixer.music.unload()
+            outputFile = "speak.wav"
+            self.__t2s_module.save_to_file(self.__SelectedText(),outputFile)
+            self.__t2s_module.runAndWait()
+            pygame.mixer.music.load(outputFile)
+            pygame.mixer.music.play()
+
+        def stop():
+            pygame.mixer.music.stop()
+        def pause():
+            pygame.mixer.music.pause()
+        def unpause():
+            pygame.mixer.music.unpause()
+        playAllButton = tk.Button(f1,width=14,height=2,text="Speak all text",command=readAll)
+        playAllButton.grid(padx=30,pady=10,row=0,column=0)
+        playSelectedButton = tk.Button(f1,width=14,height=2,text="Speak selected text",command=readSelected)
+        playSelectedButton.grid(padx=30,pady=10,row=0,column=1)
+
+        labe = tk.Label(f2,width=14,height=2,text='Rate of Speach:')
+        labe.grid(padx=30,pady=10,row=0,column=0)
+        rateMenu.grid(padx=15,pady=10,row=0,column=1)
+
+        playBtn=tk.Button(f3,width=14,height=2,text="Play",command=unpause)
+        playBtn.grid(padx=15,pady=10,row=0,column=0)
+        pauseBtn=tk.Button(f3,width=14,height=2,text="Pause",command=pause)
+        pauseBtn.grid(padx=15,pady=10,row=0,column=1)
+        stopBtn=tk.Button(f3,width=14,height=2,text="Stop",command=stop)
+        stopBtn.grid(padx=15,pady=10,row=0,column=2)
+
+    def __AllText(self):                                    
+        """Helper function to get all text fron __TextArea"""
+        str_to_speak = self.__TextArea.get(1.0,tk.END)
+        return str_to_speak
+
+    def __SelectedText(self):                               
+        """Helper function of T2S to get only selected text from __TextArea"""
+        if self.__TextArea.tag_ranges("sel"):
+            str_to_speak= self.__TextArea.get("sel.first","sel.last")
+            return str_to_speak
+        return ""
+
+    def run(self):                  #Start main loop
         self.__root.mainloop()
   
 if __name__ == "__main__":
-# Run main application
     textPad = TextPad(width=800,height=450)
     textPad.run()
