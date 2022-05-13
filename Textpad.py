@@ -41,6 +41,7 @@ class TextPad:
     
     __thisScrollBar = tk.Scrollbar(__TextArea)    
     __file = None
+    __tempMenu=tk.Menu(__root,tearoff=0)
     
     def __init__(self,**kwargs):
 
@@ -178,12 +179,14 @@ class TextPad:
 
         self.__StyleMenu.add_command(label='BG Color',command=self.__ChangeBGColor)
 
-        
-
         self.__MenuBar.add_cascade(label="Style",
                                        menu=self.__StyleMenu)
 
+        
         self.__MenuBar.add_separator()
+
+        self.__MenuBar.add_separator()
+
 
         self.__MenuBar.add_command(label="Encpt/Decrpt",command=self.__Encrypter)
 
@@ -193,19 +196,10 @@ class TextPad:
 
         self.__MenuBar.add_separator()
 
-        # self.__Text2SpeechMenu.add_command(label='Speak All',command=self.__AllTextToSpeach)
-        # self.__Text2SpeechMenu.add_command(label='Speak Selected',command=self.__SelectedTextToSpeach)
-        # for rate in range(80,261,20):
-        #     self.__Text2SpeeckRate_SubMenu.add_command(label=rate,command=partial(self.__T2S_Change_Rate,rate))
-        
-        #self.__Text2SpeechMenu.add_cascade(label='Change Speed',menu=self.__Text2SpeeckRate_SubMenu)
         self.__MenuBar.add_command(label='Text to Speach',command=self.__Text2Speach_wind)
 
+        #self.__MenuBar.add_command(label='temp',command=self.__temp_tester)
 
-        
-
-        #self.__MenuBar.add_command(label="OCR",command=self.__todo)
-        
         self.__root.config(menu=self.__MenuBar)
  
         self.__thisScrollBar.pack(side=tk.RIGHT,fill=tk.Y)                   
@@ -396,8 +390,21 @@ class TextPad:
 
 
     def __Text2Speach_wind(self):
-        __wind = tk.Tk()
+        __wind = tk.Toplevel()
+        __wind.title("Text to Speach")
+        __wind.geometry("400x300")
+        # __wind.focus_set()
+        # __wind.grab_set()
         pygame.mixer.init()
+
+        f1=tk.Frame(__wind,bg="#b6eef4")
+        f2=tk.Frame(__wind,bg="#a6eef4")
+        f3=tk.Frame(__wind,bg="#86def4")
+
+        f1.place(width=400,height=100)
+        f2.place(y=100,width=400,height=100)
+        f3.place(y=200,width=400,height=100)
+        
         
         def updateRate(vr):
             self.__t2s_module.setProperty('rate',rateSelected.get())
@@ -406,7 +413,8 @@ class TextPad:
         rateOption=list(range(80,261,20))
         rateSelected = tk.IntVar()
         rateSelected.set(self.__Text2SpeechRate)
-        rateMenu = tk.OptionMenu(__wind,rateSelected,*rateOption,command=updateRate)
+        rateMenu = tk.OptionMenu(f2,rateSelected,*rateOption,command=updateRate)
+        rateMenu.config(width=18)
 
         def readAll():
             pygame.mixer.music.unload()
@@ -414,7 +422,7 @@ class TextPad:
                 os.remove("speak.wav")
                 print("removed ...............")
             outputFile = "speak.wav"
-            self.__t2s_module.save_to_file(self.__TextArea.get(1.0,tk.END),outputFile)
+            self.__t2s_module.save_to_file(self.__AllText(),outputFile)
             self.__t2s_module.runAndWait()
             pygame.mixer.music.load(outputFile)
             pygame.mixer.music.play()
@@ -437,24 +445,24 @@ class TextPad:
             pygame.mixer.music.unpause()
 
 
-        playAllButton = tk.Button(__wind,text="Speak all text",command=readAll)
-        playSelectedButton = tk.Button(__wind,text="Speak selected text",command=readSelected)
+        playAllButton = tk.Button(f1,width=14,height=2,text="Speak all text",command=readAll)
+        playSelectedButton = tk.Button(f1,width=14,height=2,text="Speak selected text",command=readSelected)
 
-        playAllButton.grid(row=0,column=0)
-        playSelectedButton.grid(row=0,column=1)
+        playAllButton.grid(padx=30,pady=10,row=0,column=0)
+        playSelectedButton.grid(padx=30,pady=10,row=0,column=1)
 
-        labe = tk.Label(__wind,text='Rate of Speach:')
-        labe.grid(row=1,column=0)
+        labe = tk.Label(f2,width=14,height=2,text='Rate of Speach:')
+        labe.grid(padx=30,pady=10,row=0,column=0)
+        rateMenu.grid(padx=15,pady=10,row=0,column=1)
 
-        rateMenu.grid(row=1,column=1)
-        playBtn=tk.Button(__wind,text="Play",command=unpause)
-        playBtn.grid(row=2,column=0)
+        playBtn=tk.Button(f3,width=14,height=2,text="Play",command=unpause)
+        playBtn.grid(padx=15,pady=10,row=0,column=0)
 
-        pauseBtn=tk.Button(__wind,text="Pause",command=pause)
-        pauseBtn.grid(row=2,column=1)
+        pauseBtn=tk.Button(f3,width=14,height=2,text="Pause",command=pause)
+        pauseBtn.grid(padx=15,pady=10,row=0,column=1)
 
-        stopBtn=tk.Button(__wind,text="Stop",command=stop)
-        stopBtn.grid(row=2,column=2)
+        stopBtn=tk.Button(f3,width=14,height=2,text="Stop",command=stop)
+        stopBtn.grid(padx=15,pady=10,row=0,column=2)
 
 
     def __AllText(self):
@@ -528,14 +536,16 @@ class TextPad:
         __find_button.grid(row=2,column=0,columnspan=2)
 
     def __Encrypter(self):
-        __wind = tk.Tk()
+        __wind = tk.Toplevel()
+        __wind.focus_set()
+        __wind.grab_set()
         # __wind.grab_set()
         __wind.title('Encrypt')
-        __wind.geometry("300x250")
+        __wind.geometry("300x150")
         __pass_lab = tk.Label(__wind,text='Password : ')
-        __pass_lab.grid(row=0,column=0)
-        __pass_inp = tk.Entry(__wind)
-        __pass_inp.grid(row=0,column=1)
+        __pass_lab.grid(padx=20,pady=20,row=0,column=0)
+        __pass_inp = tk.Entry(__wind,show='*')
+        __pass_inp.grid(padx=20,pady=20,row=0,column=1)
         
         def enc():
             password = __pass_inp.get()
@@ -553,10 +563,10 @@ class TextPad:
                 return
             self.encrypt(password,False)
         
-        __pass_btn1=tk.Button(__wind,text='enc me',command=enc)
-        __pass_btn1.grid(row=1,column=0)
-        __pass_btn=tk.Button(__wind,text='dnc me',command=dnc)
-        __pass_btn.grid(row=1,column=1)
+        __pass_btn1=tk.Button(__wind,text='enc me',command=enc,width=10,bg='cyan3')
+        __pass_btn1.grid(padx=20,pady=20,row=1,column=0)
+        __pass_btn=tk.Button(__wind,text='dnc me',command=dnc,width=10,bg='cyan3')
+        __pass_btn.grid(padx=20,pady=20,row=1,column=1)
 
     def encrypt(self,pas,forwar=True):
         pas_byte= pas.encode('utf-8')
@@ -586,18 +596,13 @@ class TextPad:
                 key=key+(chr(x))
         self.__TextArea.delete("1.0","end-1c")
         self.__TextArea.insert('1.0',cipher_text)
-        
-
-
 
     def run(self):
  
         # Run main application
         self.__root.mainloop()
- 
- 
- 
+  
 if __name__ == "__main__":
 # Run main application
-    textPad = TextPad(width=700,height=350)
+    textPad = TextPad(width=800,height=450)
     textPad.run()

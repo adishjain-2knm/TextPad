@@ -13,20 +13,21 @@ class Ocr:
     def __init__(self, root):
         self.root = root
         self.root.title("Optical Character Recognition")
-        self.root.geometry("900x650+320+100")
-        self.root.configure(bg='cyan3')
+        self.root.geometry("700x350+320+100")
+        self.root.configure(bg='#a6eef4')
         self.img=''
         self.fname2=''
+        self.root.resizable(0,0)
 
-        F1 = Frame(self.root,bg='cyan3')
-        F1.place(x=130, y=30, width=900, height=50)
-        Button(F1,width=12,text="Open Image",font=("arial", 13), bg="orange", bd=1, command=self.selectimg).grid(padx=15,pady=3,row=0, column=0)
-        Button(F1,width=12,text="Run OCR",font=("arial", 13), bg="orange", bd=1, command=self.scan).grid(padx=15,pady=3,row=0, column=1)
-        Button(F1,width=12,text="Copy to Clipboard",font=("arial", 13), bg="orange", bd=1, command=self.save).grid(padx=15,pady=3,row=0, column=2)
+        F1 = Frame(self.root,bg='#a6eef4')
+        F1.place(x=30, y=30, width=600, height=50)
+        Button(F1,width=18,text="Open Image",font=("arial", 13), bg="orange", bd=1, command=self.selectimg).grid(padx=15,pady=3,row=0, column=0)
+        Button(F1,width=18,text="Run OCR",font=("arial", 13), bg="orange", bd=1, command=self.scan).grid(padx=15,pady=3,row=0, column=1)
+        Button(F1,width=18,text="Copy to Clipboard",font=("arial", 13), bg="orange", bd=1, command=self.save).grid(padx=25,pady=3,row=0, column=2)
         #Button(F1,width=15,text="Open in Notepad",font=("arial", 13), bg="orange", bd=1, command=self.opennp).grid(padx=15,pady=3,row=0, column=3)
         
         F2 = Frame(self.root)
-        F2.place(x=40, y=80, width=820, height=500)
+        F2.place(x=40, y=80, width=620, height=200)
         scroll_y = Scrollbar(F2, orient=VERTICAL)
         
         self.txtarea = Text(F2, font="arial 14", yscrollcommand=scroll_y.set)
@@ -34,8 +35,8 @@ class Ocr:
         scroll_y.config(command=self.txtarea.yview)
         self.txtarea.pack(fill=BOTH, expand=1)
         
-        F3 = Frame(self.root,bg='cyan3')
-        F3.place(x=280, y=600, width=900, height=50)
+        F3 = Frame(self.root,bg='#a6eef4')
+        F3.place(x=160, y=300, width=300, height=50)
         Button(F3,width=12,text="Close Image",font=("arial", 13), bg="orange", bd=1, command=self.imgclose).grid(padx=15,pady=3,row=0, column=0)
         Button(F3,width=12,text="Exit",font=("arial", 13), bg="orange", bd=1, command=self.exitwin).grid(padx=15,pady=3,row=0, column=1)
         
@@ -72,7 +73,6 @@ class Ocr:
         else:
             self.root.clipboard_clear()
             strin = self.txtarea.get(1.0,END)
-            print(strin)
             self.root.clipboard_append(strin)
 
     def opennp(self):
